@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG Clusterisasi Vaksinasi COVID-19 - Kota Tobelo</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            margin-top: 0.75rem;
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .role-option input[type="radio"] {
+            display: none;
+        }
+
+        .role-option label {
+            display: block;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            font-weight: 500;
+        }
+
+        .role-option input[type="radio"]:checked + label {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .role-option label i {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .login-footer p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .demo-accounts {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: left;
+        }
+
+        .demo-accounts h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .demo-accounts p {
+            color: #666;
+            font-size: 0.8rem;
+            margin: 0.25rem 0;
+        }
+
+        .main-app {
+            display: none;
+        }
+
+        .main-app.active {
+            display: block;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            text-align: center;
+            display: none;
+        }
+
+        .admin-badge {
+            background: #ffc107;
+            color: #333;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+
+        .user-badge {
+            background: #28a745;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+
+        /* Responsive Login */
+        @media (max-width: 768px) {
+            .login-card {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .login-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .role-selector {
+                flex-direction: column;
+            }
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation */
+        .nav {
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-right: 2rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 1rem 0;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .page-section {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* Dashboard */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Map */
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .map-controls {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .control-btn.active {
+            background: #4c63d2;
+        }
+
+        /* Legend */
+        .legend {
+            background: white;
+            padding: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 200px;
+        }
+
+        .legend h4 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        /* About Section */
+        .about-content {
+            line-height: 1.6;
+        }
+
+        .about-content h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .about-content p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .feature-card i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .nav-menu {
+                flex-direction: column;
+            }
+
+            .nav-item {
+                margin: 0;
+            }
+
+            .nav-link {
+                padding: 0.5rem 0;
+            }
+
+            .main-content {
+                padding: 0 1rem;
+            }
+
+            .map-controls {
+                justify-content: center;
+            }
+
+            .legend {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1><i class="fas fa-map-marked-alt"></i> SIG Vaksinasi</h1>
+                <p>Sistem Informasi Geografis Clusterisasi Vaksinasi COVID-19</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                    <i class="fas fa-user"></i>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                    <i class="fas fa-lock"></i>
+                </div>
+
+                <div class="role-selector">
+                    <div class="role-option">
+                        <input type="radio" id="admin" name="role" value="admin" checked>
+                        <label for="admin">
+                            <i class="fas fa-user-shield"></i>
+                            Admin
+                        </label>
+                    </div>
+                    <div class="role-option">
+                        <input type="radio" id="user" name="role" value="user">
+                        <label for="user">
+                            <i class="fas fa-user"></i>
+                            User
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Masuk
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <div class="demo-accounts">
+                    <h4>Akun Demo:</h4>
+                    <p><strong>Admin:</strong> admin / admin123</p>
+                    <p><strong>User:</strong> user / user123</p>
+                </div>
+                <p style="margin-top: 1rem;">© 2024 SIG Vaksinasi COVID-19 Tobelo</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="main-app">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1><i class="fas fa-map-marked-alt"></i> SIG Vaksinasi COVID-19</h1>
+                <p>Sistem Informasi Geografis Clusterisasi Vaksinasi COVID-19 Kota Tobelo</p>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div>
+                        <span id="userName">Admin</span>
+                        <span id="userRole" class="admin-badge">ADMIN</span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Keluar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#peta" class="nav-link" onclick="showSection('peta')">
+                        <i class="fas fa-map"></i> Peta Sebaran
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#tentang" class="nav-link" onclick="showSection('tentang')">
+                        <i class="fas fa-info-circle"></i> Tentang
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="page-section active">
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard Vaksinasi COVID-19</h2>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <h3 id="totalPenduduk">15,847</h3>
+                    <p>Total Penduduk</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-syringe"></i>
+                    <h3 id="totalVaksin">12,456</h3>
+                    <p>Total Vaksinasi</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-check-circle"></i>
+                    <h3 id="persenVaksin">78.6%</h3>
+                    <p>Persentase Vaksinasi</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3 id="totalArea">24</h3>
+                    <p>Area Terdampak</p>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                <div>
+                    <h3>Status Vaksinasi per Kelurahan</h3>
+                    <div id="chartContainer" style="height: 300px; background: #f8f9fa; border-radius: 10px; padding: 1rem; margin-top: 1rem;">
+                        <canvas id="vaccineChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3>Tren Vaksinasi Bulanan</h3>
+                    <div id="trendContainer" style="height: 300px; background: #f8f9fa; border-radius: 10px; padding: 1rem; margin-top: 1rem;">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Peta Section -->
+        <section id="peta" class="page-section">
+            <h2><i class="fas fa-map"></i> Peta Sebaran Vaksinasi COVID-19</h2>
+            <div class="map-controls">
+                <button class="control-btn active" onclick="showLayer('all')">
+                    <i class="fas fa-eye"></i> Semua Area
+                </button>
+                <button class="control-btn" onclick="showLayer('terdampak')">
+                    <i class="fas fa-exclamation-triangle"></i> Area Terdampak
+                </button>
+                <button class="control-btn" onclick="showLayer('tidak-terdampak')">
+                    <i class="fas fa-check-circle"></i> Area Tidak Terdampak
+                </button>
+                <button class="control-btn" onclick="showLayer('cluster')">
+                    <i class="fas fa-layer-group"></i> Cluster Analysis
+                </button>
+            </div>
+            <div style="position: relative;">
+                <div id="map"></div>
+                <div class="legend">
+                    <h4>Legenda</h4>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #dc3545;"></div>
+                        <span>Area Terdampak</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #28a745;"></div>
+                        <span>Area Tidak Terdampak</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ffc107;"></div>
+                        <span>Area Rawan</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #17a2b8;"></div>
+                        <span>Pusat Vaksinasi</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tentang Section -->
+        <section id="tentang" class="page-section">
+            <div class="about-content">
+                <h2><i class="fas fa-info-circle"></i> Tentang Sistem</h2>
+                <p>
+                    Sistem Informasi Geografis (SIG) Clusterisasi Vaksinasi COVID-19 di Kota Tobelo merupakan 
+                    sistem berbasis web yang dikembangkan untuk memetakan dan menganalisis distribusi vaksinasi 
+                    COVID-19 di wilayah Kota Tobelo, Maluku Utara.
+                </p>
+                <p>
+                    Sistem ini menggunakan teknologi Geographic Information System (GIS) untuk memberikan 
+                    visualisasi yang komprehensif tentang sebaran vaksinasi COVID-19, mengidentifikasi area 
+                    yang terdampak dan tidak terdampak, serta melakukan analisis cluster untuk menentukan 
+                    pola distribusi vaksinasi.
+                </p>
+
+                <h2>Fitur Utama</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <h3>Dashboard Interaktif</h3>
+                        <p>Menampilkan statistik real-time tentang status vaksinasi dan data demografis</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-map"></i>
+                        <h3>Peta Interaktif</h3>
+                        <p>Visualisasi geografis sebaran vaksinasi dengan berbagai layer informasi</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-layer-group"></i>
+                        <h3>Analisis Cluster</h3>
+                        <p>Pengelompokan area berdasarkan tingkat vaksinasi dan karakteristik demografis</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>Analisis Data</h3>
+                        <p>Grafik dan statistik untuk memahami tren vaksinasi</p>
+                    </div>
+                </div>
+
+                <h2>Teknologi yang Digunakan</h2>
+                <p>
+                    Sistem ini dikembangkan menggunakan HTML5, CSS3, JavaScript, dan library Leaflet untuk 
+                    pemetaan interaktif. Backend menggunakan PHP untuk pengolahan data dan API untuk 
+                    komunikasi dengan database.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    </div> <!-- End of mainApp -->
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Data dummy untuk demo
+        const dummyData = {
+            areaTerdampak: [
+                {lat: 1.7267, lng: 128.0016, name: "Tobelo Tengah", vaksinasi: 45, populasi: 1200, status: "terdampak"},
+                {lat: 1.7280, lng: 128.0025, name: "Tobelo Utara", vaksinasi: 38, populasi: 980, status: "terdampak"},
+                {lat: 1.7250, lng: 128.0030, name: "Tobelo Timur", vaksinasi: 52, populasi: 1450, status: "terdampak"},
+                {lat: 1.7290, lng: 128.0010, name: "Tobelo Barat", vaksinasi: 41, populasi: 1100, status: "terdampak"},
+                {lat: 1.7240, lng: 128.0040, name: "Tobelo Selatan", vaksinasi: 35, populasi: 890, status: "terdampak"}
+            ],
+            areaTidakTerdampak: [
+                {lat: 1.7300, lng: 128.0050, name: "Dufa-Dufa", vaksinasi: 85, populasi: 1350, status: "tidak-terdampak"},
+                {lat: 1.7320, lng: 128.0020, name: "Gosoma", vaksinasi: 78, populasi: 1200, status: "tidak-terdampak"},
+                {lat: 1.7200, lng: 128.0060, name: "Tabalohe", vaksinasi: 82, populasi: 1480, status: "tidak-terdampak"},
+                {lat: 1.7310, lng: 128.0070, name: "Ruko", vaksinasi: 75, populasi: 1150, status: "tidak-terdampak"},
+                {lat: 1.7180, lng: 128.0080, name: "Pilowo", vaksinasi: 88, populasi: 1600, status: "tidak-terdampak"}
+            ],
+            pusatVaksinasi: [
+                {lat: 1.7267, lng: 128.0016, name: "Puskesmas Tobelo", type: "puskesmas"},
+                {lat: 1.7280, lng: 128.0025, name: "RS Tobelo", type: "rumah_sakit"},
+                {lat: 1.7250, lng: 128.0030, name: "Klinik Bersama", type: "klinik"}
+            ]
+        };
+
+        // Inisialisasi peta
+        let map;
+        let markers = [];
+        let currentLayer = 'all';
+
+        function initMap() {
+            map = L.map('map').setView([1.7267, 128.0016], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            loadMapData();
+        }
+
+        function loadMapData() {
+            clearMarkers();
+
+            // Area terdampak (merah)
+            if (currentLayer === 'all' || currentLayer === 'terdampak') {
+                dummyData.areaTerdampak.forEach(area => {
+                    const marker = L.marker([area.lat, area.lng], {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34]
+                        })
+                    }).addTo(map);
+
+                    marker.bindPopup(`
+                        <strong>${area.name}</strong><br>
+                        Status: <span style="color: red;">Area Terdampak</span><br>
+                        Vaksinasi: ${area.vaksinasi}%<br>
+                        Populasi: ${area.populasi} jiwa
+                    `);
+
+                    markers.push(marker);
+                });
+            }
+
+            // Area tidak terdampak (hijau)
+            if (currentLayer === 'all' || currentLayer === 'tidak-terdampak') {
+                dummyData.areaTidakTerdampak.forEach(area => {
+                    const marker = L.marker([area.lat, area.lng], {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34]
+                        })
+                    }).addTo(map);
+
+                    marker.bindPopup(`
+                        <strong>${area.name}</strong><br>
+                        Status: <span style="color: green;">Area Tidak Terdampak</span><br>
+                        Vaksinasi: ${area.vaksinasi}%<br>
+                        Populasi: ${area.populasi} jiwa
+                    `);
+
+                    markers.push(marker);
+                });
+            }
+
+            // Pusat vaksinasi (biru)
+            if (currentLayer === 'all' || currentLayer === 'cluster') {
+                dummyData.pusatVaksinasi.forEach(pusat => {
+                    const marker = L.marker([pusat.lat, pusat.lng], {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34]
+                        })
+                    }).addTo(map);
+
+                    marker.bindPopup(`
+                        <strong>${pusat.name}</strong><br>
+                        Tipe: <span style="color: blue;">Pusat Vaksinasi</span><br>
+                        Jenis: ${pusat.type}
+                    `);
+
+                    markers.push(marker);
+                });
+            }
+        }
+
+        function clearMarkers() {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+        }
+
+        function showLayer(layer) {
+            currentLayer = layer;
+            loadMapData();
+
+            // Update button states
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Navigation functions
+        function showSection(sectionId) {
+            // Check if user is logged in
+            if (!currentUser) {
+                showNotification('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            // Hide all sections
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find the clicked nav link and add active class
+            const clickedLink = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+            if (clickedLink) {
+                clickedLink.classList.add('active');
+            }
+
+            // Initialize map when peta section is shown
+            if (sectionId === 'peta' && !map) {
+                setTimeout(() => {
+                    initMap();
+                }, 100);
+            }
+        }
+
+        // Update dashboard stats
+        function updateDashboardStats() {
+            const totalTerdampak = dummyData.areaTerdampak.length;
+            const totalTidakTerdampak = dummyData.areaTidakTerdampak.length;
+            const totalArea = totalTerdampak + totalTidakTerdampak;
+            
+            document.getElementById('totalArea').textContent = totalArea;
+            
+            // Simulate real-time updates
+            setInterval(() => {
+                const currentVaksin = parseInt(document.getElementById('totalVaksin').textContent.replace(',', ''));
+                const newVaksin = currentVaksin + Math.floor(Math.random() * 10);
+                document.getElementById('totalVaksin').textContent = newVaksin.toLocaleString();
+                
+                const newPercent = ((newVaksin / 15847) * 100).toFixed(1);
+                document.getElementById('persenVaksin').textContent = newPercent + '%';
+            }, 10000);
+        }
+
+        // ...existing code...
+
+        // Tambahkan fungsi untuk mencari pusat vaksinasi terdekat dari lokasi user
+        function findNearestVaksinasi(lat, lng) {
+            let minDist = Infinity;
+            let nearest = null;
+            dummyData.pusatVaksinasi.forEach(pusat => {
+                const dist = getDistanceFromLatLonInKm(lat, lng, pusat.lat, pusat.lng);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = pusat;
+                }
+            });
+            return { pusat: nearest, distance: minDist };
+        }
+
+        // Fungsi menghitung jarak dua koordinat (Haversine)
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius bumi dalam km
+            const dLat = deg2rad(lat2 - lat1);
+            const dLon = deg2rad(lon2 - lon1);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+        function deg2rad(deg) {
+            return deg * (Math.PI / 180);
+        }
+
+        // Tambahkan tombol di map controls
+        document.addEventListener('DOMContentLoaded', function() {
+            const controls = document.querySelector('.map-controls');
+            if (controls) {
+            const btn = document.createElement('button');
+            btn.className = 'control-btn';
+            btn.innerHTML = '<i class="fas fa-location-arrow"></i> Vaksinasi Terdekat';
+            btn.onclick = function(e) {
+                e.preventDefault();
+                if (!navigator.geolocation) {
+                alert('Geolocation tidak didukung browser Anda.');
+                    return;
+                }
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari...';
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    const userLat = pos.coords.latitude;
+                    const userLng = pos.coords.longitude;
+                    // Cari pusat vaksinasi terdekat
+                    const result = findNearestVaksinasi(userLat, userLng);
+                    if (result.pusat) {
+                    // Tambahkan marker lokasi user
+                        const userMarker = L.marker([userLat, userLng], {
+                            icon: L.icon({
+                                iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png',
+                                iconSize: [32, 32],
+                                iconAnchor: [16, 32],
+                                popupAnchor: [0, -32]
+                            })
+                        }).addTo(map);
+                        userMarker.bindPopup('Lokasi Anda').openPopup();
+                        markers.push(userMarker);
+
+                        // Highlight marker pusat vaksinasi terdekat
+                        const nearestMarker = L.marker([result.pusat.lat, result.pusat.lng], {
+                            icon: L.icon({
+                                iconUrl: 'https://cdn-icons-png.flaticon.com/512/190/190411.png',
+                                iconSize: [32, 32],
+                                iconAnchor: [16, 32],
+                                popupAnchor: [0, -32]
+                            })
+                        }).addTo(map);
+                        nearestMarker.bindPopup(
+                            `<strong>${result.pusat.name}</strong><br>Jarak: ${result.distance.toFixed(2)} km`
+                        ).openPopup();
+                        markers.push(nearestMarker);
+
+                        // Zoom ke area antara user dan pusat vaksinasi
+                        map.fitBounds([
+                            [userLat, userLng],
+                            [result.pusat.lat, result.pusat.lng]
+                        ]);
+                    }
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-arrow"></i> Vaksinasi Terdekat';
+                }, function() {
+                    alert('Gagal mendapatkan lokasi Anda.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-arrow"></i> Vaksinasi Terdekat';
+                });
+            };
+            controls.appendChild(btn);
+        }
+    });
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize login page
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('mainApp').classList.remove('active');
+            
+            // Focus on username field
+            document.getElementById('username').focus();
+            
+            // Add CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                .login-card {
+                    animation: fadeIn 0.5s ease;
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+            // === LETAKKAN KODE LOGIN DI SINI ===
+            const users = [
+                 {username: 'admin', password: 'admin123', role: 'admin'},
+                {username: 'user', password: 'user123', role: 'user'}
+            ];
+            let currentUser = null;
+
+            function handleLogin(event) {
+                event.preventDefault();
+                const uname = document.getElementById('username').value.trim();
+                const pwd = document.getElementById('password').value.trim();
+                const role = document.querySelector('input[name="role"]:checked').value;
+                const found = users.find(u => u.username === uname && u.password === pwd && u.role === role);
+                if (found) {
+                    currentUser = found;
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainApp').classList.add('active');
+                    // Set user info
+                    document.getElementById('userName').textContent = found.username.charAt(0).toUpperCase() + found.username.slice(1);
+                    document.getElementById('userAvatar').textContent = found.username.charAt(0).toUpperCase();
+                    document.getElementById('userRole').textContent = found.role.toUpperCase();
+                    document.getElementById('userRole').className = found.role === 'admin' ? 'admin-badge' : 'user-badge';
+                    // Show dashboard by default
+                    showSection('dashboard');
+                    updateDashboardStats();
+                } else {
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'Username, password, atau role salah!';
+                }
+            }
+
+            function logout() {
+                currentUser = null;
+                document.getElementById('mainApp').classList.remove('active');
+                document.getElementById('loginPage').style.display = 'flex';
+                document.getElementById('loginForm').reset();
+                document.getElementById('errorMessage').style.display = 'none';
+                document.getElementById('username').focus();
+            }
+    </script>
+</body>
+</html>
